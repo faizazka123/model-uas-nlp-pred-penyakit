@@ -3,7 +3,10 @@ import string
 import contractions
 import nltk
 import os
+from nltk import pos_tag
 from nltk.corpus import stopwords
+from nltk.corpus import wordnet
+from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
 # Tentukan path lokal untuk nltk_data
@@ -24,10 +27,37 @@ try:
     nltk.data.find('corpora/wordnet')
 except LookupError:
     nltk.download('wordnet', download_dir=nltk_data_path)
+    
+try:
+    nltk.data.find('taggers/averaged_perceptron_tagger_eng')
+except LookupError:
+    nltk.download('averaged_perceptron_tagger_eng', download_dir=nltk_data_path)
+    
+try:
+    nltk.data.find('corpora/wordnet')
+except LookupError:
+    nltk.download('wordnet', download_dir=nltk_data_path)
+    
+try:
+    nltk.data.find('tokenizers/punkt_tab')
+except LookupError:
+    nltk.download('punkt_tab', download_dir=nltk_data_path)
 
 # Siapkan stopwords dan lemmatizer
 stop_words = set(stopwords.words('english'))
-lemmatizer = WordNetLemmatizer()
+wordnet_lemmatizer = WordNetLemmatizer()
+
+def get_wordnet_pos(treebank_tag):
+  if treebank_tag.startswith('J'):
+    return wordnet.ADJ
+  elif treebank_tag.startswith('V'):
+    return wordnet.VERB
+  elif treebank_tag.startswith('N'):
+    return wordnet.NOUN
+  elif treebank_tag.startswith('R'):
+    return wordnet.ADV
+  else:
+    return wordnet.NOUN
 
 def preprocess_text(text):
     # 1. Expand contractions (e.g., can't → cannot)
@@ -44,9 +74,15 @@ def preprocess_text(text):
 
     # 5. Remove extra spaces
     text = re.sub(r'\s+', ' ', text).strip()
+    
+    # 6. Remove stopwords
+    stopwords = nltk.corpus.stopwords.words('english')
+    text = " ".join([word for word in str(text).split() if word not in stopwords])
 
-    # 6. Remove stopwords & 7. Lemmatization
-    tokens = text.split()
-    cleaned_tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words]
+    # 7. Lemmatization
+    tokens = word_tokenize(text)
+    tagged_tokens = pos_tag(tokens)
+    lemmatized = [wordnet_lemmatizer.lemmatize(word, get_wordnet_pos(pos)) for word, pos in tagged_tokens]
+    cleaned_tokens = ' '.join(lemmatized)
 
-    return " ".join(cleaned_tokens)
+    return cleaned_tokens

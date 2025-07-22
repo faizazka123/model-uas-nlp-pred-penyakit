@@ -1,11 +1,22 @@
 from flask import Flask, request, jsonify
 from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from sklearn.preprocessing import LabelEncoder
 from preprocess import preprocess_text
 import numpy as np
 import tensorflow as tf
+import pickle
 
 # Load model
 model = load_model("model_klasifikasi_gejala_v3.keras")
+
+# with open("tokenizer.pkl", "rb") as t:
+#     tokenizer = pickle.load(t)
+
+# with open("label_encoder.pkl", "rb") as le:
+#     label_encoder = pickle.load(le)
+
 
 # Flask app
 app = Flask(__name__)
@@ -20,13 +31,19 @@ def predict():
     if not data or 'text' not in data:
         return jsonify({'error': 'Missing text field'}), 400
 
+    max_len = int(19)
     user_input = data['text']
     clean_input = preprocess_text(user_input)
+    
+    tokenizer = Tokenizer(num_words=5000, oov_token="<OOV>")
+    tokenizer.fit_on_texts([clean_input])
+    sequence = tokenizer.texts_to_sequences([clean_input])
+    padded_seq = pad_sequences(sequence, maxlen=max_len)
+    print(sequence)
 
-    # Ubah sesuai input model kamu (contoh jika input model langsung berupa teks)
-    result = model.predict([clean_input])
-    predicted_label = tf.argmax(result, axis=1).numpy()[0]
-
+    pred = model.predict(padded_seq)
+    predicted_label = np.argmax(pred)
+    
     label_map = {
         0: "Dengue Fever",
         1: "Asthma",
@@ -138,9 +155,16 @@ def predict():
         "desc": "No description available.",
         "solution": "Please consult a healthcare provider."
     })
+    
+    # return (label)
 
     return jsonify({
         "disease": label,
         "desc": disease_detail["desc"],
         "solution": disease_detail["solution"]
     })
+
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
