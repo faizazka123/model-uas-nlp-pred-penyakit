@@ -10,7 +10,7 @@ model = load_model("model_klasifikasi_gejala_v3.keras")
 # Flask app
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
     return "AI Disease Classifier is running!"
 
