@@ -1,17 +1,20 @@
 from flask import Flask, request, jsonify
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.text import tokenizer_from_json
 from sklearn.preprocessing import LabelEncoder
 from preprocess import preprocess_text
 import numpy as np
 import tensorflow as tf
 import pickle
+import json
 
 # Load model
 model = load_model("model_klasifikasi_gejala_v3_alt2.keras")
 
-with open("tokenizer.pkl", "rb") as t:
-    tokenizer = pickle.load(t)
+with open("tokenizer.json") as f:
+    tokenizer_data = json.load(f)
+    tokenizer = tokenizer_from_json(tokenizer_data)
 
 with open("max_len.pkl", "rb") as f:
     max_len = pickle.load(f)
