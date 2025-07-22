@@ -4,3 +4,6 @@ nltk
 numpy
 contractions
 gunicorn
+scikit-learn
+matplotlib
+pandas
