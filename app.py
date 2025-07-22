@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import tokenizer_from_json
@@ -21,6 +22,7 @@ with open("max_len.pkl", "rb") as f:
 
 # Flask app
 app = Flask(__name__)
+CORS(app, origins=["https://react-uas-nlp-pred-penyakit.vercel.app"])
 
 @app.route("/", methods=["GET"])
 def home():
