@@ -11,7 +11,7 @@ import tensorflow as tf
 import pickle
 
 # Load model
-model = load_model("model_klasifikasi_gejala_v3_alt.keras")
+model = load_model("model_klasifikasi_gejala_v3_alt.h5")
 
 with open("tokenizer.pkl", "rb") as t:
     tokenizer = pickle.load(t)
