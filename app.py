@@ -13,8 +13,8 @@ import json
 model = load_model("model_klasifikasi_gejala_v3_alt2.keras")
 
 with open("tokenizer.json") as f:
-    tokenizer_data = json.load(f)
-    tokenizer = tokenizer_from_json(tokenizer_data)
+    tokenizer_json = f.read()
+    tokenizer = tokenizer_from_json(tokenizer_json)
 
 with open("max_len.pkl", "rb") as f:
     max_len = pickle.load(f)
