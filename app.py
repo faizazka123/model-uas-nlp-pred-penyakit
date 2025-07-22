@@ -9,14 +9,13 @@ import tensorflow as tf
 import pickle
 
 # Load model
-model = load_model("model_klasifikasi_gejala_v3.keras")
+model = load_model("model_klasifikasi_gejala_v3_alt.h5")
 
-# with open("tokenizer.pkl", "rb") as t:
-#     tokenizer = pickle.load(t)
+with open("tokenizer.pkl", "rb") as t:
+    tokenizer = pickle.load(t)
 
-# with open("label_encoder.pkl", "rb") as le:
-#     label_encoder = pickle.load(le)
-
+with open("max_len.pkl", "rb") as f:
+    max_len = pickle.load(f)
 
 # Flask app
 app = Flask(__name__)
@@ -31,40 +30,37 @@ def predict():
     if not data or 'text' not in data:
         return jsonify({'error': 'Missing text field'}), 400
 
-    max_len = int(19)
     user_input = data['text']
     clean_input = preprocess_text(user_input)
-    
-    tokenizer = Tokenizer(num_words=5000, oov_token="<OOV>")
-    tokenizer.fit_on_texts([clean_input])
     sequence = tokenizer.texts_to_sequences([clean_input])
     padded_seq = pad_sequences(sequence, maxlen=max_len)
-    print(sequence)
+    
+    print(padded_seq)
 
     pred = model.predict(padded_seq)
     predicted_label = np.argmax(pred)
     
     label_map = {
-        0: "Dengue Fever",
-        1: "Asthma",
-        2: "Chickenpox",
-        3: "Diabetes",
-        4: "Varicose Veins",
+        0: "Allergy",
+        1: "Arthritis",
+        2: "Asthma",
+        3: "Cervical Spondylosis",
+        4: "Chickenpox",
         5: "Common Cold",
-        6: "Malaria",
-        7: "Psoriasis",
-        8: "Gastroesophageal Reflux Disease",
-        9: "Arthritis",
-        10: "Impetigo",
-        11: "Hypertension",
-        12: "Pneumonia",
-        13: "Cervical Spondylosis",
-        14: "Typhoid",
-        15: "Peptic Ulcer Disease",
-        16: "Allergy",
-        17: "Drug Reaction",
+        6: "Dengue Fever",
+        7: "Diabetes",
+        8: "Drug Reaction",
+        9: "Gastroesophageal Reflux Disease",
+        10: "Hypertension",
+        11: "Impetigo",
+        12: "Malaria",
+        13: "Migraine",
+        14: "Peptic Ulcer Disease",
+        15: "Pneumonia",
+        16: "Psoriasis",
+        17: "Typhoid",
         18: "Urinary Tract Infection",
-        19: "Migraine"
+        19: "Varicose Veins"
     }
 
     disease_info = {
@@ -156,7 +152,6 @@ def predict():
         "solution": "Please consult a healthcare provider."
     })
     
-    # return (label)
 
     return jsonify({
         "disease": label,
